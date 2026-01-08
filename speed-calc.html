@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Speed vs Time Calculator - Warehouse</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--accent-color);
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            transform: rotate(180deg);
+        }
+
+        .form-group {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .input-item {
+            margin-bottom: 20px;
+        }
+
+        .input-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-item label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--secondary-text);
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        .input-item input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e5ea;
+            border-radius: var(--border-radius-medium);
+            font-size: 17px;
+            font-family: inherit;
+            background-color: #f9f9fb;
+            transition: var(--transition);
+            -webkit-appearance: none;
+        }
+
+        .input-item input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+        }
+
+        .calc-button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-large);
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        .calc-button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .results-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .results-container h2 {
+            font-size: 18px;
+            margin: 0 0 12px;
+            font-weight: 600;
+        }
+
+        #result {
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--primary-text);
+            margin: 0;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Warehouse
+        </a>
+
+        <header style="text-align: left; margin-bottom: 32px;">
+            <h1 style="font-size: 28px;">Speed vs Time</h1>
+            <p class="subtitle">Physics Calculator</p>
+        </header>
+
+        <div class="form-group">
+            <div class="input-item">
+                <label for="maxSpeed">Maximum Speed (m/s)</label>
+                <input type="number" id="maxSpeed" step="any" placeholder="e.g. 50" required>
+            </div>
+            <div class="input-item">
+                <label for="acceleration">Acceleration (m/s²)</label>
+                <input type="number" id="acceleration" step="any" placeholder="e.g. 5" required>
+            </div>
+            <div class="input-item">
+                <label for="distance">Distance (m)</label>
+                <input type="number" id="distance" step="any" placeholder="e.g. 1000" required>
+            </div>
+        </div>
+
+        <button class="calc-button" onclick="calculate()">Calculate & Plot</button>
+
+        <div id="results-box" class="results-container">
+            <h2>Results</h2>
+            <p id="result"></p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="speedTimeChart"></canvas>
+        </div>
+
+        <footer
+            style="position: relative; margin-top: 40px; padding-bottom: 20px; background: transparent; backdrop-filter: none;">
+            <p>&copy; 2026 Ykimleong Warehouse</p>
+        </footer>
+    </div>
+
+    <script>
+        let chart;
+
+        function calculate() {
+            let maxSpeed = parseFloat(document.getElementById('maxSpeed').value);
+            let acceleration = parseFloat(document.getElementById('acceleration').value);
+            let distance = parseFloat(document.getElementById('distance').value);
+
+            if (isNaN(maxSpeed) || isNaN(acceleration) || isNaN(distance)) {
+                alert("Please fill in all fields with valid numbers.");
+                return;
+            }
+
+            document.getElementById('results-box').style.display = 'block';
+
+            let minDistance = (maxSpeed ** 2) / (2 * acceleration);
+            let time;
+            let resultText;
+            let speedData = [];
+            let timeData = [];
+
+            if (distance >= minDistance) {
+                let t1 = maxSpeed / acceleration;
+                let d1 = (maxSpeed ** 2) / (2 * acceleration);
+                let t2 = t1;
+                let d2 = d1;
+                let remainingDistance = distance - (d1 + d2);
+                let cruiseTime = remainingDistance > 0 ? remainingDistance / maxSpeed : 0;
+                let totalTime = t1 + cruiseTime + t2;
+                resultText = `The object will reach max speed. Total travel time: <strong>${totalTime.toFixed(2)}</strong> seconds.`;
+
+                for (let t = 0; t <= totalTime + 0.1; t += 0.1) {
+                    if (t <= t1) {
+                        speedData.push(acceleration * t);
+                    } else if (t <= t1 + cruiseTime) {
+                        speedData.push(maxSpeed);
+                    } else if (t <= totalTime) {
+                        speedData.push(Math.max(0, maxSpeed - acceleration * (t - t1 - cruiseTime)));
+                    }
+                    timeData.push(t.toFixed(2));
+                }
+            } else {
+                let maxAchievableSpeed = Math.sqrt(2 * acceleration * distance);
+                let t = maxAchievableSpeed / acceleration;
+                let totalTime = 2 * t;
+                resultText = `Object won't reach max speed. Max achieved: ${maxAchievableSpeed.toFixed(2)} m/s. Total travel time: <strong>${totalTime.toFixed(2)}</strong> seconds.`;
+
+                for (let t = 0; t <= totalTime + 0.1; t += 0.1) {
+                    if (t <= totalTime / 2) {
+                        speedData.push(acceleration * t);
+                    } else if (t <= totalTime) {
+                        speedData.push(Math.max(0, maxAchievableSpeed - acceleration * (t - totalTime / 2)));
+                    }
+                    timeData.push(t.toFixed(2));
+                }
+            }
+
+            document.getElementById('result').innerHTML = resultText;
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('speedTimeChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeData,
+                    datasets: [{
+                        label: 'Speed (m/s)',
+                        data: speedData,
+                        borderColor: '#007aff',
+                        backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time (s)', color: '#8e8e93' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Speed (m/s)', color: '#8e8e93' },
+                            grid: { color: '#f2f2f7' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
