@@ -176,8 +176,8 @@
             <h3>Machine Specs</h3>
             <div class="input-row">
                 <div class="input-group">
-                    <label>Pump Size (cc/rev)</label>
-                    <select id="pumpCC">
+                    <label>ISO Pump (cc)</label>
+                    <select id="isoPumpCC">
                         <option value="2.5">2.5 cc</option>
                         <option value="6.0" selected>6.0 cc</option>
                         <option value="10.9">10.9 cc</option>
@@ -186,9 +186,22 @@
                         <option value="107.0">107.0 cc</option>
                     </select>
                 </div>
-                <!-- Variable Pump selection -->
                 <div class="input-group">
-                    <label>Variable Limit</label>
+                    <label>POL Pump (cc)</label>
+                    <select id="polPumpCC">
+                        <option value="2.5">2.5 cc</option>
+                        <option value="6.0" selected>6.0 cc</option>
+                        <option value="10.9">10.9 cc</option>
+                        <option value="28.0">28.0 cc</option>
+                        <option value="55.0">55.0 cc</option>
+                        <option value="107.0">107.0 cc</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Motor Pole</label>
                     <select id="variablePct">
                         <option value="0.2">20%</option>
                         <option value="0.4">40%</option>
@@ -209,7 +222,20 @@
                         <option value="8" selected>8 Pole</option>
                     </select>
                 </div>
+                <!-- Variable Pump selection moved here -->
                 <div class="input-group">
+                    <label>Variable Limit</label>
+                    <select id="variablePct">
+                        <option value="0.2">20%</option>
+                        <option value="0.4">40%</option>
+                        <option value="0.6">60%</option>
+                        <option value="0.8">80%</option>
+                        <option value="1.0" selected>100%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group input-full">
                     <label>Freq Range (Hz)</label>
                     <div style="display: flex; gap: 8px;">
                         <input type="number" id="minHz" placeholder="5" value="5" min="5" max="60" style="width: 50%;">
