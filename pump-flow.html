@@ -154,6 +154,12 @@
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
+
+        /* Error state for result card */
+        .result-card.error {
+            background: linear-gradient(135deg, #ff3b30 0%, #d70015 100%);
+            box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3);
+        }
     </style>
 </head>
 
@@ -169,7 +175,7 @@
 
         <header style="text-align: left; margin-bottom: 24px;">
             <h1 style="font-size: 28px;">Pump Range</h1>
-            <p class="subtitle">Flow Rate Calculator (V2)</p>
+            <p class="subtitle">Flow Rate Calculator (V3)</p>
         </header>
 
         <div class="form-section">
@@ -326,10 +332,10 @@
 
             // Global
             const ratio = parseFloat(document.getElementById('ratio').value);
-            const maxHz = parseFloat(document.getElementById('maxHz').value);
-            const minHz = parseFloat(document.getElementById('minHz').value);
+            const maxHzLimit = parseFloat(document.getElementById('maxHz').value);
+            const minHzLimit = parseFloat(document.getElementById('minHz').value);
 
-            if ([isoPumpBase, polPumpBase, ratio, isoSG, polSG, maxHz, minHz].some(isNaN)) {
+            if ([isoPumpBase, polPumpBase, ratio, isoSG, polSG, maxHzLimit, minHzLimit].some(isNaN)) {
                 alert("Please fill in all fields correctly.");
                 return;
             }
@@ -352,44 +358,74 @@
             const factorISO = getFlowFactor(isoPumpBase, isoVar, isoPoles, isoSG);
             const factorPOL = getFlowFactor(polPumpBase, polVar, polPoles, polSG);
 
-            function solveForHz(hz, side) {
-                if (side === 'MAX') {
-                    // Try running ISO at maxHz, see if POL limit is exceeded
-                    let isoH = hz;
-                    let polH = (isoH * factorISO / ratio) / factorPOL;
+            // Relationship: hzPOL = hzISO * (factorISO / (ratio * factorPOL))
+            // Let K be such that hzISO = K * hzPOL
+            // K = Ratio * (FactorPOL / FactorISO)
+            const K = ratio * (factorPOL / factorISO);
 
-                    // If calculated POL Hz > maxHz, we must limit POL to maxHz
-                    if (polH > hz) {
-                        polH = hz;
-                        isoH = (polH * factorPOL * ratio) / factorISO;
-                    }
-                    return { isoH, polH, total: (isoH * factorISO) + (polH * factorPOL) };
-                } else {
-                    // Try running ISO at minHz
-                    let isoH = hz;
-                    let polH = (isoH * factorISO / ratio) / factorPOL;
+            // We need to find the Valid Range for POL Hz where BOTH pumps are within limits.
+            // 1. Direct POL limits: [minHz, maxHz]
+            // 2. Induced POL limits from ISO range [minHz, maxHz]: 
+            //    minHz <= HzISO <= maxHz
+            //    minHz <= K * HzPOL <= maxHz
+            //    minHz/K <= HzPOL <= maxHz/K
 
-                    // If calculated POL Hz < minHz, we must limit POL to minHz
-                    if (polH < hz) {
-                        polH = hz;
-                        isoH = (polH * factorPOL * ratio) / factorISO;
-                    }
-                    return { isoH, polH, total: (isoH * factorISO) + (polH * factorPOL) };
+            const actualMinPOL = Math.max(minHzLimit, minHzLimit / K);
+            const actualMaxPOL = Math.min(maxHzLimit, maxHzLimit / K);
+
+            const resultCard = document.getElementById('resultCard');
+
+            // Reset error state
+            resultCard.classList.remove('error');
+
+            if (actualMinPOL > actualMaxPOL) {
+                // Impossible Configuration (Ranges do not overlap)
+                resultCard.classList.add('error'); // Make it red
+                document.getElementById('minFlow').innerText = "---";
+                document.getElementById('maxFlow').innerText = "---";
+                document.getElementById('detailBody').innerHTML = `
+                    <tr><td colspan="4" style="text-align: center; color: white; font-weight: 600; padding: 20px;">
+                        NOT correct sizing of pump<br>
+                        <span style="font-size: 13px; opacity: 0.9;">Impossible range (No valid Hz overlap)</span>
+                    </td></tr>
+                `;
+            } else {
+                // Valid Configuration
+                function calcResult(polHz) {
+                    const isoHz = K * polHz;
+                    const isoFlow = isoHz * factorISO;
+                    const polFlow = polHz * factorPOL;
+                    return {
+                        isoHz,
+                        polHz,
+                        total: isoFlow + polFlow
+                    };
                 }
+
+                const minResult = calcResult(actualMinPOL);
+                const maxResult = calcResult(actualMaxPOL);
+
+                document.getElementById('minFlow').innerText = minResult.total.toFixed(1);
+                document.getElementById('maxFlow').innerText = maxResult.total.toFixed(1);
+
+                document.getElementById('detailBody').innerHTML = `
+                    <tr>
+                        <td><strong>Max</strong></td>
+                        <td class="num">${maxResult.isoHz.toFixed(1)}</td>
+                        <td class="num">${maxResult.polHz.toFixed(1)}</td>
+                        <td class="num"><strong>${maxResult.total.toFixed(1)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Min</strong></td>
+                        <td class="num">${minResult.isoHz.toFixed(1)}</td>
+                        <td class="num">${minResult.polHz.toFixed(1)}</td>
+                        <td class="num"><strong>${minResult.total.toFixed(1)}</strong></td>
+                    </tr>
+                `;
             }
 
-            const maxResult = solveForHz(maxHz, 'MAX');
-            const minResult = solveForHz(minHz, 'MIN');
-
-            document.getElementById('minFlow').innerText = minResult.total.toFixed(1);
-            document.getElementById('maxFlow').innerText = maxResult.total.toFixed(1);
-
-            document.getElementById('detailBody').innerHTML = `
-                <tr><td><strong>Max</strong></td><td class="num">${maxResult.isoH.toFixed(1)}</td><td class="num">${maxResult.polH.toFixed(1)}</td><td class="num"><strong>${maxResult.total.toFixed(1)}</strong></td></tr>
-                <tr><td><strong>Min</strong></td><td class="num">${minResult.isoH.toFixed(1)}</td><td class="num">${minResult.polH.toFixed(1)}</td><td class="num"><strong>${minResult.total.toFixed(1)}</strong></td></tr>
-            `;
-            document.getElementById('resultCard').style.display = 'block';
-            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+            resultCard.style.display = 'block';
+            resultCard.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
