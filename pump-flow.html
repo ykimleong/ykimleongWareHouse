@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pump Flow Range - Warehouse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--accent-color);
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            transform: rotate(180deg);
+        }
+        .form-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .form-section h3 {
+            margin: 0 0 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid #f0f0f5;
+            padding-bottom: 12px;
+        }
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .input-full {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--secondary-text);
+            margin-bottom: 6px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: var(--border-radius-medium);
+            font-size: 17px;
+            background-color: #f9f9fb;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+        .input-group select {
+             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+             background-repeat: no-repeat;
+             background-position: right 12px center;
+             background-size: 16px;
+        }
+        .calc-button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-large);
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+            transition: transform 0.1s;
+        }
+        .calc-button:active {
+            transform: scale(0.98);
+        }
+        .result-card {
+            background: linear-gradient(135deg, #007aff 0%, #005ec4 100%);
+            color: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 24px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+            display: none;
+        }
+        .result-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .result-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .result-sub {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+        .detail-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            font-size: 13px;
+            color: rgba(255,255,255,0.95);
+        }
+        .detail-table th {
+            text-align: left;
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-weight: 500;
+        }
+        .detail-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .detail-table td.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            Warehouse
+        </a>
+
+        <header style="text-align: left; margin-bottom: 24px;">
+            <h1 style="font-size: 28px;">Pump Range</h1>
+            <p class="subtitle">Flow Rate Calculator</p>
+        </header>
+
+        <div class="form-section">
+            <h3>Machine Specs</h3>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Pump Size (cc)</label>
+                    <input type="number" id="pumpCC" placeholder="6.0" value="6.0">
+                </div>
+                <div class="input-group">
+                    <label>Motor Pole</label>
+                    <select id="motorPole">
+                        <option value="2">2 Pole</option>
+                        <option value="4">4 Pole</option>
+                        <option value="8" selected>8 Pole</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Max Hz</label>
+                    <input type="number" id="maxHz" placeholder="60.0" value="60.0">
+                </div>
+                <div class="input-group">
+                    <label>Min Hz</label>
+                    <input type="number" id="minHz" placeholder="10.0" value="10.0">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Material Specs</h3>
+            <div class="input-full input-group">
+                <label>Target Ratio (ISO / POL)</label>
+                <input type="number" id="ratio" placeholder="2.0" value="2.0">
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>ISO S.G.</label>
+                    <input type="number" id="isoSG" placeholder="1.16" value="1.16">
+                </div>
+                <div class="input-group">
+                    <label>POL S.G.</label>
+                    <input type="number" id="polSG" placeholder="1.05" value="1.05">
+                </div>
+            </div>
+        </div>
+
+        <button class="calc-button" onclick="calculateFlow()">Calculate Range</button>
+
+        <div id="resultCard" class="result-card">
+            <div class="result-label">Output Range (Total g/s)</div>
+            <div class="result-value">
+                <span id="minFlow">41.1</span> - <span id="maxFlow">136.2</span>
+            </div>
+            <div class="result-sub">grams per second</div>
+
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>Limits</th>
+                        <th>ISO Hz</th>
+                        <th>POL Hz</th>
+                        <th>Total g/s</th>
+                    </tr>
+                </thead>
+                <tbody id="detailBody">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function calculateFlow() {
+            // Inputs
+            const pumpCC = parseFloat(document.getElementById('pumpCC').value);
+            const poles = parseInt(document.getElementById('motorPole').value);
+            const ratio = parseFloat(document.getElementById('ratio').value);
+            const isoSG = parseFloat(document.getElementById('isoSG').value);
+            const polSG = parseFloat(document.getElementById('polSG').value);
+            const maxHz = parseFloat(document.getElementById('maxHz').value);
+            const minHz = parseFloat(document.getElementById('minHz').value);
+
+            if ([pumpCC, ratio, isoSG, polSG, maxHz, minHz].some(isNaN)) {
+                alert("Please fill in all fields correctly.");
+                return;
+            }
+
+            // Constants based on reverse-engineering the screenshot
+            const pumpEff = 0.90; // 90% volumetric efficiency
+            // Motor Slip Factor: Screenshot 8-pole 60Hz = 870 RPM. Synch = 900. 870/900 = 0.9666
+            const motorSlip = 0.9666; 
+            const synchRPM_per_Hz = 120 / poles; 
+
+            // Calculator Helper
+            function getFlowAtHz(hz, component) {
+                // RPM = Hz * (120/Poles) * Slip
+                const rpm = hz * synchRPM_per_Hz * motorSlip;
+                // Vol Flow (cc/min) = PumpCC * RPM * Eff
+                const volFlowMin = pumpCC * rpm * pumpEff;
+                // Mass Flow (g/s) = (VolFlowMin / 60) * SG
+                const massFlow = (volFlowMin / 60) * (component === 'ISO' ? isoSG : polSG);
+                return massFlow;
+            }
+
+            // Calculation Factor (g/s per Hz)
+            const factorISO = getFlowAtHz(1, 'ISO');
+            const factorPOL = getFlowAtHz(1, 'POL');
+
+            // --- MAX FLOW CALCULATION ---
+            // Try running ISO at Max Hz
+            let maxTotal = 0;
+            let maxISOHz = maxHz;
+            let maxPOLHz = 0;
+
+            const isoMaxPotential = maxHz * factorISO;
+            const reqPolFlow = isoMaxPotential / ratio;
+            const reqPolHz = reqPolFlow / factorPOL;
+
+            if (reqPolHz <= maxHz) {
+                // ISO is the limiting factor (POL can keep up)
+                maxPOLHz = reqPolHz;
+                maxTotal = isoMaxPotential + reqPolFlow;
+            } else {
+                // POL is the limiting factor (Requires > Max Hz)
+                // Cap POL at Max Hz
+                maxPOLHz = maxHz;
+                const polMaxPotential = maxHz * factorPOL;
+                const reqIsoFlow = polMaxPotential * ratio;
+                maxISOHz = reqIsoFlow / factorISO;
+                maxTotal = polMaxPotential + reqIsoFlow;
+            }
+
+            // --- MIN FLOW CALCULATION ---
+            // Determine which pump hits the floor (Min Hz) first
+            let minTotal = 0;
+            let minISOHz = 0;
+            let minPOLHz = 0;
+
+            // Scenario A: ISO is at Min Hz
+            const isoMinPotential = minHz * factorISO;
+            const reqPolFlowMinA = isoMinPotential / ratio;
+            const reqPolHzMinA = reqPolFlowMinA / factorPOL;
+
+            // Scenario B: POL is at Min Hz
+            const polMinPotential = minHz * factorPOL;
+            const reqIsoFlowMinB = polMinPotential * ratio;
+            const reqIsoHzMinB = reqIsoFlowMinB / factorISO;
+
+            // We need the HIGHER of the two scenarios to ensure NO pump is below Min Hz
+            // If we use Scenario A, is POL Hz >= Min Hz?
+            if (reqPolHzMinA >= minHz) {
+                // Valid scenario. ISO is running at Min, POL is running Faster.
+                // System Min is determined by ISO floor.
+                minISOHz = minHz;
+                minPOLHz = reqPolHzMinA;
+                minTotal = isoMinPotential + reqPolFlowMinA;
+            } else {
+                // Invalid. POL would be too slow.
+                // Must be Scenario B. POL is running at Min, ISO is running Faster.
+                minPOLHz = minHz;
+                minISOHz = reqIsoHzMinB;
+                minTotal = polMinPotential + reqIsoFlowMinB;
+            }
+
+            // Update UI
+            document.getElementById('minFlow').innerText = minTotal.toFixed(1);
+            document.getElementById('maxFlow').innerText = maxTotal.toFixed(1);
+            
+            const tbody = document.getElementById('detailBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td><strong>Max</strong></td>
+                    <td class="num">${maxISOHz.toFixed(1)}</td>
+                    <td class="num">${maxPOLHz.toFixed(1)}</td>
+                    <td class="num"><strong>${maxTotal.toFixed(1)}</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Min</strong></td>
+                    <td class="num">${minISOHz.toFixed(1)}</td>
+                    <td class="num">${minPOLHz.toFixed(1)}</td>
+                    <td class="num"><strong>${minTotal.toFixed(1)}</strong></td>
+                </tr>
+            `;
+
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
