@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cabinet Cycle - Warehouse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--accent-color);
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            transform: rotate(180deg);
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            margin: 0 0 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid #f0f0f5;
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--secondary-text);
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: var(--border-radius-medium);
+            font-size: 17px;
+            background-color: #f9f9fb;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+        }
+
+        .calc-button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-large);
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+            margin-bottom: 24px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .result-table th,
+        .result-table td {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f0f5;
+        }
+
+        .result-table th {
+            color: var(--secondary-text);
+            font-weight: 500;
+            width: 60%;
+        }
+
+        .result-table td {
+            text-align: right;
+            font-weight: 600;
+            font-family: "SF Mono", "Menlo", monospace;
+        }
+
+        .c-label {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-right: 6px;
+            display: inline-block;
+            width: 20px;
+        }
+
+        /* Responsive Grid */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .calculator-grid {
+                /* Tablet: 2 Columns */
+                grid-template-columns: 1fr 1fr;
+                align-items: start;
+            }
+
+            .section-basic {
+                grid-column: 1;
+            }
+
+            .section-plant {
+                grid-column: 2;
+            }
+
+            .calc-button-container {
+                grid-column: 1 / -1;
+            }
+
+            .section-result {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .calculator-grid {
+                /* Desktop: 3 Columns */
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .section-basic {
+                grid-column: 1;
+            }
+
+            .section-plant {
+                grid-column: 2;
+            }
+
+            .section-result {
+                grid-column: 3;
+                grid-row: 1 / span 2;
+                display: block !important;
+                height: 100%;
+            }
+
+            .calc-button-container {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Warehouse
+        </a>
+
+        <header style="text-align: left; margin-bottom: 24px;">
+            <h1 style="font-size: 28px;">Cabinet Cycle</h1>
+            <p class="subtitle">Plant Cycle Time Calculation</p>
+        </header>
+
+        <div class="calculator-grid">
+
+            <!-- Basic Information -->
+            <div class="section-card section-basic">
+                <div class="section-title">
+                    <span>Basic Information</span>
+                    <span class="c-label">B1-3</span>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Hrs/Day</label>
+                        <input type="number" id="b1" value="8">
+                    </div>
+                    <div class="input-group">
+                        <label>Days/Year</label>
+                        <input type="number" id="b2" value="264">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Yield Rate / Efficiency (%)</label>
+                    <input type="number" id="b3" value="90">
+                </div>
+            </div>
+
+            <!-- Default Plant Function -->
+            <div class="section-card section-plant">
+                <div class="section-title">
+                    <span>Default Plant Function</span>
+                    <span class="c-label">P1-3</span>
+                </div>
+                <div class="input-group">
+                    <label>Number of Cabinet Fixture</label>
+                    <input type="number" id="p1" value="7">
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Curing Time (sec)</label>
+                        <input type="number" id="p2" value="180">
+                    </div>
+                    <div class="input-group">
+                        <label>Automation Time (sec)</label>
+                        <input type="number" id="p3" value="60">
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-button-container">
+                <button class="calc-button" onclick="calculate()">Calculate Configuration</button>
+            </div>
+
+            <!-- Calculated Final Configuration -->
+            <div class="section-card section-result" id="resultBox"
+                style="display: none; border: 2px solid var(--accent-color);">
+                <div class="section-title" style="border-bottom-color: #e5e5ea;">
+                    <span style="color: var(--accent-color);">Final Configuration</span>
+                </div>
+                <table class="result-table">
+                    <tbody>
+                        <tr>
+                            <th><span class="c-label">C1</span>1 Cab Fixture Prod Rate</th>
+                            <td><span id="c1">15</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">cab/hr</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C2</span>Total Cab Prod Rate</th>
+                            <td><span id="c2">105</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">cab/hr</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C3</span>Cycle Time</th>
+                            <td><span id="c3">34.3</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">sec</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C4</span>Hour Prod (After Yield)</th>
+                            <td><span id="c4">30.9</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">cab/hr</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C5</span>Yearly Prod (After Yield)</th>
+                            <td><span id="c5">65,170</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">cab/yr</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div> <!-- End grid -->
+    </div>
+
+    <script>
+        function calculate() {
+            // Inputs
+            const b1 = parseFloat(document.getElementById('b1').value); // Hrs/Day
+            const b2 = parseFloat(document.getElementById('b2').value); // Days/Year
+            const b3 = parseFloat(document.getElementById('b3').value) / 100; // Yield
+
+            const p1 = parseFloat(document.getElementById('p1').value); // Fixtures
+            const p2 = parseFloat(document.getElementById('p2').value); // Curing
+            const p3 = parseFloat(document.getElementById('p3').value); // Automation
+
+            // C1: 1 Cabinet Fixture prod. rate = 3600 / (p2 + p3)
+            const c1 = 3600 / (p2 + p3);
+
+            // C2: Total Cabinet prod. Rate = c1 * p1
+            const c2 = c1 * p1;
+
+            // C3: Cycle time = 3600 / c2
+            const c3 = 3600 / c2;
+
+            // C4: Hour product (after yield) = c2 * b3 [UPDATED FORMULA]
+            // Rate * Yield = 105 * 0.9 = 94.5
+            const c4 = c2 * b3;
+
+            // C5: Yearly product (after yield) = c4 * b1 * b2
+            const c5 = c4 * b1 * b2;
+
+            // Render
+            document.getElementById('c1').innerText = parseFloat(c1.toFixed(0)); // Sheet shows integer 15 (15.0)
+            document.getElementById('c2').innerText = parseFloat(c2.toFixed(0));
+            document.getElementById('c3').innerText = c3.toFixed(1);
+            document.getElementById('c4').innerText = c4.toFixed(1);
+            document.getElementById('c5').innerText = c5.toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+            const resBox = document.getElementById('resultBox');
+            resBox.style.display = 'block';
+
+            if (window.innerWidth < 768) {
+                resBox.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+
+</html>

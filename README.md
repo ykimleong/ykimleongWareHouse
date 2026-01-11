@@ -29,6 +29,12 @@ This project is a web-based collection of utility tools designed for quick and e
   4. **Cycle Time per Station**: Input station time → calculates total output.
 - Features a responsive layout (1-3 columns) for easy data viewing on all devices.
 
+### 4. Cabinet Cycle (`cabinet-cycle.html`)
+**Refrigerator Plant Calculation**
+- Calculates production rates for cabinet fixtures.
+- Inputs: Working hours, Days/Year, Yield %, Fixture count, Curing/Automation times.
+- Outputs: Hourly and Yearly production rates (Cabinet/Hour, Cabinet/Year).
+
 ## Usage
 Simply open `index.html` in your web browser to access the main hub. From there, you can navigate to the specific tools.
 
