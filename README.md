@@ -20,6 +20,15 @@ This project is a web-based collection of utility tools designed for quick and e
 - valid frequency range analysis to ensure pump limits are respecting the mixing ratio.
 - Detailed output table showing Min/Max Hz and Total Flow (g/s).
 
+### 3. Cycle Time (`cycle-time.html`)
+**Plant & Production Calculator**
+- Calculates plant configuration and production output based on 4 modes:
+  1. **Yearly Requirement**: Input target pieces/year → calculates required cycle time.
+  2. **Plant Size**: Input number of stations → calculates achievable cycle time.
+  3. **Cycle Time per Round**: Input total round time → calculates plant size.
+  4. **Cycle Time per Station**: Input station time → calculates total output.
+- Features a responsive layout (1-3 columns) for easy data viewing on all devices.
+
 ## Usage
 Simply open `index.html` in your web browser to access the main hub. From there, you can navigate to the specific tools.
 
