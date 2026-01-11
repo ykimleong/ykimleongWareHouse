@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cycle Time - Warehouse</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--accent-color);
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            transform: rotate(180deg);
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-large);
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            margin: 0 0 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid #f0f0f5;
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--secondary-text);
+            margin-bottom: 6px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: var(--border-radius-medium);
+            font-size: 17px;
+            background-color: #f9f9fb;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+        }
+
+        .mode-selector {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .radio-card {
+            border: 1px solid #e5e5ea;
+            border-radius: var(--border-radius-medium);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .radio-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .radio-card input {
+            margin-right: 12px;
+            accent-color: var(--accent-color);
+        }
+
+        .radio-card label {
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .calc-button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-large);
+            padding: 18px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+            margin-bottom: 24px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .result-table th,
+        .result-table td {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f0f5;
+        }
+
+        .result-table th {
+            color: var(--secondary-text);
+            font-weight: 500;
+            width: 60%;
+        }
+
+        .result-table td {
+            text-align: right;
+            font-weight: 600;
+            font-family: "SF Mono", "Menlo", monospace;
+        }
+
+        .highlight-row {
+            background-color: rgba(0, 122, 255, 0.05);
+        }
+
+        .c-label {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-right: 6px;
+            display: inline-block;
+            width: 20px;
+        }
+
+        /* Desktop Layout Optimization */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .calculator-grid {
+                /* Tablet: 2 Columns */
+                grid-template-columns: 1fr 1fr;
+                align-items: start;
+            }
+
+            /* Span items logically */
+            .section-basic {
+                grid-column: 1;
+            }
+
+            .section-mode {
+                grid-column: 1;
+            }
+
+            .section-station {
+                grid-column: 2;
+                grid-row: 1 / span 2;
+            }
+
+            .calc-button-container {
+                grid-column: 1 / -1;
+            }
+
+            .section-result {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .calculator-grid {
+                /* Desktop: 3 Columns */
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .section-basic {
+                grid-column: 1;
+            }
+
+            /* Mode below Basic */
+            .section-mode {
+                grid-column: 1;
+            }
+
+            .section-station {
+                grid-column: 2;
+                grid-row: 1 / span 3;
+                /* Tall column */
+            }
+
+            /* Results in 3rd column, always visible or placeholder space */
+            .section-result {
+                grid-column: 3;
+                grid-row: 1 / span 3;
+                display: block !important;
+                /* Force display on desktop to maintain layout structure, opacity handled via JS if needed, but keeping simple */
+                height: 100%;
+            }
+
+            .calc-button-container {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Warehouse
+        </a>
+
+        <header style="text-align: left; margin-bottom: 24px;">
+            <h1 style="font-size: 28px;">Cycle Time</h1>
+            <p class="subtitle">Plant & Production Calculator</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Basic Information -->
+            <div class="section-card section-basic">
+                <div class="section-title">
+                    <span>Basic Information</span>
+                    <span class="c-label">B1-3</span>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Hrs/Day</label>
+                        <input type="number" id="b1" value="8">
+                    </div>
+                    <div class="input-group">
+                        <label>Days/Month</label>
+                        <input type="number" id="b2" value="22">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Yield Rate / Efficiency (%)</label>
+                    <input type="number" id="b3" value="90">
+                </div>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="section-card section-mode">
+                <div class="section-title">
+                    <span>Calculation Mode</span>
+                </div>
+
+                <div class="mode-selector">
+                    <div class="radio-card active" onclick="selectMode('m4')">
+                        <input type="radio" name="mode" id="mode_m4" value="m4" checked>
+                        <label for="mode_m4">Cycle Time per Station</label>
+                    </div>
+                    <div class="radio-card" onclick="selectMode('m3')">
+                        <input type="radio" name="mode" id="mode_m3" value="m3">
+                        <label for="mode_m3">Cycle Time per Round</label>
+                    </div>
+                    <div class="radio-card" onclick="selectMode('m2')">
+                        <input type="radio" name="mode" id="mode_m2" value="m2">
+                        <label for="mode_m2">Plant Size (# of Stations)</label>
+                    </div>
+                    <div class="radio-card" onclick="selectMode('m1')">
+                        <input type="radio" name="mode" id="mode_m1" value="m1">
+                        <label for="mode_m1">Yearly Requirement</label>
+                    </div>
+                </div>
+
+                <!-- Dynamic Input based on Mode -->
+                <div class="input-group">
+                    <label id="dynamicInputLabel">Target Cycle Time (sec)</label>
+                    <input type="number" id="dynamicInput" value="19" placeholder="Enter value">
+                </div>
+            </div>
+
+            <!-- Plant Stations -->
+            <div class="section-card section-station">
+                <div class="section-title">
+                    <span>Station Config</span>
+                    <span style="font-size: 12px; color: #8e8e93; font-weight: 400;">P1-P9</span>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Mould Close</label>
+                        <input type="number" class="st-input" id="p1" value="1.5">
+                    </div>
+                    <div class="input-group">
+                        <label>Mould Open</label>
+                        <input type="number" class="st-input" id="p2" value="1.5">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Pouring</label>
+                        <input type="number" class="st-input" id="p3" value="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Auto Unload</label>
+                        <input type="number" class="st-input" id="p4" value="1">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Spraying</label>
+                        <input type="number" class="st-input" id="p5" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Angle Change</label>
+                        <input type="number" class="st-input" id="p6" value="1">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Others</label>
+                        <input type="number" class="st-input" id="p7" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Operator</label>
+                        <input type="number" class="st-input" id="p8" value="5">
+                    </div>
+                </div>
+
+                <div class="input-group" style="padding-top: 10px; border-top: 1px dashed #e5e5ea;">
+                    <label style="color: var(--accent-color);">Curing Time (sec) [MUST]</label>
+                    <input type="number" id="p9" value="300" style="font-weight: 600;">
+                </div>
+            </div>
+
+            <div class="calc-button-container">
+                <button class="calc-button" onclick="calculate()">Calculate Configuration</button>
+            </div>
+
+            <!-- Results -->
+            <div class="section-card section-result" id="resultBox"
+                style="display: none; border: 2px solid var(--accent-color);">
+                <div class="section-title" style="border-bottom-color: #e5e5ea;">
+                    <span style="color: var(--accent-color);">Final Configuration</span>
+                </div>
+                <table class="result-table">
+                    <tbody>
+                        <tr>
+                            <th><span class="c-label">C1</span>Min Plant Size</th>
+                            <td><span id="c1">26</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">stn</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C2</span>Cycle Time / Stn</th>
+                            <td><span id="c2">19.0</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">sec</span></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <th><span class="c-label">C3</span>Automation Stn</th>
+                            <td><span id="c3">5</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">stn</span></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <th><span class="c-label">C4</span>Curing Stn</th>
+                            <td><span id="c4">16</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">stn</span></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <th><span class="c-label">C5</span>Operator Stn</th>
+                            <td><span id="c5">5</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">stn</span></td>
+                        </tr>
+                        <tr>
+                            <th style="padding-top: 16px;"><span class="c-label">C6</span>Prod / Hour</th>
+                            <td style="padding-top: 16px;"><span id="c6">170</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">pcs</span></td>
+                        </tr>
+                        <tr>
+                            <th><span class="c-label">C7</span>Prod / Year</th>
+                            <td><span id="c7">324,136</span> <span
+                                    style="font-size:12px;color:#888;font-weight:400">pcs</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- End Grid -->
+
+    </div>
+
+    <script>
+        let currentMode = 'm4';
+
+        function selectMode(mode) {
+            currentMode = mode;
+
+            // UI Update
+            document.querySelectorAll('.radio-card').forEach(el => el.classList.remove('active'));
+            document.querySelector(`input[value="${mode}"]`).parentElement.classList.add('active');
+
+            // Label / Value Update
+            const labelEl = document.getElementById('dynamicInputLabel');
+            const inputEl = document.getElementById('dynamicInput');
+
+            if (mode === 'm4') {
+                labelEl.textContent = "Cycle Time per Station (sec)";
+                inputEl.value = 19;
+            } else if (mode === 'm3') {
+                labelEl.textContent = "Cycle Time per Round (sec)";
+                inputEl.value = 510;
+            } else if (mode === 'm2') {
+                labelEl.textContent = "Plant Size (# of Stations)";
+                inputEl.value = 26;
+            } else if (mode === 'm1') {
+                labelEl.textContent = "Yearly Production Req (pcs/yr)";
+                inputEl.value = 200000;
+            }
+        }
+
+        function calculate() {
+            // Get Basic Info
+            const hrsPerDay = parseFloat(document.getElementById('b1').value);
+            const daysPerMonth = parseFloat(document.getElementById('b2').value);
+            const yieldPct = parseFloat(document.getElementById('b3').value) / 100;
+
+            // Get Station Parts
+            const p1 = parseFloat(document.getElementById('p1').value) || 0;
+            const p2 = parseFloat(document.getElementById('p2').value) || 0;
+            const p3 = parseFloat(document.getElementById('p3').value) || 0;
+            const p4 = parseFloat(document.getElementById('p4').value) || 0;
+            const p5 = parseFloat(document.getElementById('p5').value) || 0;
+            const p6 = parseFloat(document.getElementById('p6').value) || 0;
+            const p7 = parseFloat(document.getElementById('p7').value) || 0;
+            const p8 = parseFloat(document.getElementById('p8').value) || 0; // Operator
+            const p9 = parseFloat(document.getElementById('p9').value);     // Curing Time
+
+            // C3: Automation Station Sum
+            const c3 = p1 + p2 + p3 + p4 + p5 + p6 + p7;
+            // C5: Manual Operator Station
+            const c5 = p8;
+
+            const modeInput = parseFloat(document.getElementById('dynamicInput').value);
+
+            let c1, c2; // c1: Plant Size, c2: Cycle Time per Station
+
+            // CALCULATION LOGIC BASED ON MODE
+            if (currentMode === 'm4') {
+                // INPUT: Cycle time per station
+                c2 = modeInput;
+                // c1 = sum(c3 + c4 + c5) where c4 = p9 / c2
+                const c4Raw = p9 / c2;
+                const c4 = Math.ceil(c4Raw); // Roundup curing stations
+                c1 = c3 + c4 + c5;
+            }
+            else if (currentMode === 'm3') {
+                // INPUT: Cycle time per round
+                // c2 = (RoundTime - CuringTime) / (AutoStn + OperatorStn) ?? 
+                // Using formula from sheet: c2 = (m3 - p9) / (c3 + c5) 
+                // Note: The sheet might imply different derivations, but let's stick to the common sense of "Round Time" 
+                // RoundTime = Curing + (OtherStations * CycleTime) -> This assumes parallel/serial?
+                // Sheet says: =(m3-p9)/(c3+c5)
+
+                c2 = (modeInput - p9) / (c3 + c5);
+
+                // Then calculate plant size normally?
+                // Sheet shows specific derivation for each column.
+                // Let's trust the m3 -> c2 formula:
+                if (c2 <= 0) {
+                    alert("Invalid Round Time: Must be greater than curing time!");
+                    return;
+                }
+                const c4 = Math.ceil(p9 / c2);
+                c1 = c3 + c4 + c5;
+            }
+            else if (currentMode === 'm2') {
+                // INPUT: Plant Size (# Stations)
+                c1 = modeInput;
+                // c4 = c1 - c3 - c5
+                const c4 = c1 - c3 - c5;
+                if (c4 <= 0) {
+                    alert("Plant Size too small for fixed stations!");
+                    return;
+                }
+                // c2 = p9 / c4
+                c2 = p9 / c4;
+            }
+            else if (currentMode === 'm1') {
+                // INPUT: Yearly Req
+                // Reverse engineering Yearly -> Hourly -> Cycle Time
+                // Yearly = Hourly * Hrs * Days * 12 * Yield
+                // Hourly = Yearly / (Hrs * Days * 12 * Yield)
+                const yearly = modeInput;
+                // Note: Sheet applies yield twice? 
+                // c6 (hour) = 3600/c2 * b3
+                // c7 (year) = c6 * b1 * b2 * 12 * b3 ?? Wait, sheet says c7 = c6*b1*b2*b3  (Wait, b2 is days/month, so need *12)
+
+                // Let's follow the standard forward flow to reverse it:
+                // Forward: 
+                //   HourlyProd(Net) = (3600 / c2) * Yield
+                //   YearlyProd(Net) = HourlyProd(Net) * HrsDay * (DaysMonth * 12) * Yield  <-- The double yield issue mentioned
+
+                // Let's implement EXACTLY what the forward calculation will do, then reverse it.
+                // Forward C7 = C6 * b1 * (b2*12) * b3
+                // Forward C6 = (3600 / c2) * b3
+                // So C7 = [ (3600 / c2) * b3 ] * b1 * (b2*12) * b3
+                // C7 = (3600 * b1 * b2 * 12 * b3 * b3) / c2
+                // Therefore: c2 = (3600 * b1 * b2 * 12 * b3 * b3) / Yearly
+
+                const totalWorkingHoursYear = hrsPerDay * (daysPerMonth * 12);
+                c2 = (3600 * totalWorkingHoursYear * yieldPct * yieldPct) / yearly;
+
+                const c4 = Math.ceil(p9 / c2);
+                c1 = c3 + c4 + c5;
+            }
+
+
+            // Final Calculations based on C1 & C2
+            const finalC4 = Math.ceil(p9 / c2);
+            // Re-calc C1 just in case (except for m2 where it is fixed input?)
+            // Sheet logic: For m2, C1 is fixed. For others, C1 is sum.
+            if (currentMode !== 'm2') {
+                c1 = c3 + finalC4 + c5;
+            } else {
+                // In m2, c4 is derived from c1, so it fits.
+            }
+
+            // Hourly Prod (c6)
+            // = 3600 / c2 * b3
+            const c6 = (3600 / c2) * yieldPct;
+
+            // Yearly Prod (c7)
+            // = c6 * b1 * b2 * b3 (SHEET FORMULA NOTE: The sheet image cell c7 says =c6*b1*b2*b3. 
+            // BUT b2 is days/year in column 1, and days/month in others?
+            // The image shows b2=264 days/year in col 1, b2=22 days/month in others.
+            // My UI uses b2 as Days/Month (default 22). So I must mult by 12 to get year days.
+            // AND the sheet formula says *b3 at the end. That means Yield is applied TWICE.
+
+            const daysPerYear = daysPerMonth * 12;
+            const c7 = c6 * hrsPerDay * daysPerYear * yieldPct;
+
+            // Render Results
+            document.getElementById('c1').innerText = c1;
+            document.getElementById('c2').innerText = c2.toFixed(1);
+            document.getElementById('c3').innerText = c3;
+            document.getElementById('c4').innerText = finalC4; // Curing actual
+            document.getElementById('c5').innerText = c5;
+            document.getElementById('c6').innerText = c6.toFixed(2);
+            // Format number with commas
+            document.getElementById('c7').innerText = c7.toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+            const resBox = document.getElementById('resultBox');
+            resBox.style.display = 'block';
+
+            // Only scroll on mobile
+            if (window.innerWidth < 768) {
+                resBox.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+
+</html>
