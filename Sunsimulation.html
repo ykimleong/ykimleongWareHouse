@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>地球四季与阳光角度直观模拟器 (精确物理版)</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #121619;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+            background: #1e272e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .control-panel {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        h2 {
+            text-align: center;
+            color: #f1c40f;
+            margin-top: 0;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .value-display {
+            color: #3498db;
+        }
+        .data-display {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            line-height: 1.8;
+            margin-top: 20px;
+        }
+        .legend {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #bdc3c7;
+            line-height: 1.6;
+        }
+        #simulationCanvas {
+            background-color: #0d1115; 
+            border-radius: 8px;
+            border: 1px solid #34495e;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="control-panel">
+        <h2>🌞 真实阳光与温度模拟器</h2>
+        
+        <label>
+            所在纬度: <span class="value-display" id="lat-val"></span>
+        </label>
+        <input type="range" id="latitude" min="-90" max="90" value="1.5" step="0.5">
+
+        <label>
+            当前月份: <span class="value-display" id="month-val"></span>
+        </label>
+        <input type="range" id="month" min="1" max="12" value="3" step="1">
+
+        <div class="data-display">
+            <div><strong>当前季节倾角：</strong><span id="out-declination"></span></div>
+            <div><strong>正午高度角：</strong><span id="out-elevation"></span></div>
+            <div style="margin-top: 10px;"><strong>体感：</strong><span id="out-feel"></span></div>
+        </div>
+
+        <div class="legend">
+            <strong>图例说明：</strong><br>
+            ⚪ 白色虚线：地球自转轴<br>
+            ➖ 白色实线：赤道面<br>
+            🟩 绿色短线：你所在位置的“地平线”<br>
+            🟡 黄色箭头：太阳入射光束
+        </div>
+    </div>
+
+    <canvas id="simulationCanvas" width="650" height="500"></canvas>
+</div>
+
+<script>
+    const latSlider = document.getElementById('latitude');
+    const monthSlider = document.getElementById('month');
+    const latVal = document.getElementById('lat-val');
+    const monthVal = document.getElementById('month-val');
+    const outDec = document.getElementById('out-declination');
+    const outEle = document.getElementById('out-elevation');
+    const outFeel = document.getElementById('out-feel');
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const earthCenterX = 250;
+    const earthCenterY = 250;
+    const earthRadius = 140;
+    const axialTilt = 23.44; 
+
+    function updateSimulation() {
+        const lat = parseFloat(latSlider.value);
+        const month = parseInt(monthSlider.value);
+        
+        latVal.textContent = lat > 0 ? '北纬 ' + lat + '°' : (lat < 0 ? '南纬 ' + Math.abs(lat) + '°' : '赤道 0°');
+        monthVal.textContent = month + '月';
+
+        // 计算太阳赤纬（地球的相对倾角）
+        const dayOfYear = (month - 1) * 30 + 15; 
+        const declination = -axialTilt * Math.cos((360 / 365) * (dayOfYear + 10) * (Math.PI / 180));
+        
+        // 核心角度：观察者在当前正午时，相对于直射点（太阳方向）的角度偏离
+        // 正值代表在直射点以南，负值代表在直射点以北
+        const alpha = declination - lat; 
+        const alphaRad = alpha * (Math.PI / 180);
+
+        let elevation = 90 - Math.abs(alpha);
+        if (elevation < 0) elevation = 0;
+
+        outDec.textContent = declination > 0 ? '北半球向阳 ' + declination.toFixed(1) + '°' : 
+                                   (declination < 0 ? '南半球向阳 ' + Math.abs(declination).toFixed(1) + '°' : '直射赤道');
+        outEle.textContent = elevation.toFixed(1) + '°';
+
+        let tempColor, feel;
+        if (elevation === 0) {
+            tempColor = '#8cbed6'; feel = '极夜，无阳光直射，极度严寒';
+        } else if (elevation < 20) {
+            tempColor = '#8cbed6'; feel = '凛冽刺骨，阳光严重斜射';
+        } else if (elevation < 45) {
+            tempColor = '#fdf3c7'; feel = '寒冷，吸收热量有限';
+        } else if (elevation < 65) {
+            tempColor = '#f39c12'; feel = '温暖舒适，光线适中';
+        } else {
+            tempColor = '#e74c3c'; feel = '炎热至焦灼，阳光几乎垂直击打';
+        }
+        outFeel.style.color = tempColor === '#f39c12' || tempColor === '#e74c3c' ? '#ff7979' : '#dff9fb';
+        outFeel.textContent = feel;
+
+        // --- 画布重绘开始 ---
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 绘制地球背景（背阴面，左半球）
+        ctx.beginPath();
+        ctx.arc(earthCenterX, earthCenterY, earthRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#1a252c'; 
+        ctx.fill();
+
+        // 2. 绘制地球向阳面（右半球，面向太阳）
+        ctx.beginPath();
+        ctx.arc(earthCenterX, earthCenterY, earthRadius, -Math.PI / 2, Math.PI / 2, false);
+        ctx.fillStyle = '#3498db'; 
+        ctx.fill();
+
+        // 3. 绘制地球自转轴和赤道面 (展示倾角)
+        const decRad = declination * (Math.PI / 180);
+        
+        // 自转轴 (北极到南极)
+        const npX = earthCenterX + earthRadius * Math.cos(-Math.PI / 2 + decRad);
+        const npY = earthCenterY + earthRadius * Math.sin(-Math.PI / 2 + decRad);
+        const spX = earthCenterX + earthRadius * Math.cos(Math.PI / 2 + decRad);
+        const spY = earthCenterY + earthRadius * Math.sin(Math.PI / 2 + decRad);
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]); // 虚线
+        ctx.beginPath();
+        ctx.moveTo(npX - 20 * Math.cos(-Math.PI / 2 + decRad), npY - 20 * Math.sin(-Math.PI / 2 + decRad));
+        ctx.lineTo(spX + 20 * Math.cos(Math.PI / 2 + decRad), spY + 20 * Math.sin(Math.PI / 2 + decRad));
+        ctx.stroke();
+        ctx.setLineDash([]); // 恢复实线
+
+        // 赤道面
+        const eqLeftX = earthCenterX + earthRadius * Math.cos(Math.PI + decRad);
+        const eqLeftY = earthCenterY + earthRadius * Math.sin(Math.PI + decRad);
+        const eqRightX = earthCenterX + earthRadius * Math.cos(decRad);
+        const eqRightY = earthCenterY + earthRadius * Math.sin(decRad);
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(eqLeftX, eqLeftY);
+        ctx.lineTo(eqRightX, eqRightY);
+        ctx.stroke();
+
+        // 4. 在向阳面边缘绘制温度感官渐变弧线
+        for (let angle = -90; angle <= 90; angle++) {
+            const rad1 = angle * (Math.PI / 180);
+            const rad2 = (angle + 1.5) * (Math.PI / 180);
+            
+            // 该点的局部高度角
+            let tempEle = 90 - Math.abs(angle); 
+            let arcColor;
+            if (tempEle === 0) arcColor = '#8cbed6';
+            else if (tempEle < 20) arcColor = '#bdc3c7';
+            else if (tempEle < 45) arcColor = '#fdf3c7';
+            else if (tempEle < 65) arcColor = '#f39c12';
+            else arcColor = '#e74c3c';
+
+            ctx.strokeStyle = arcColor;
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.arc(earthCenterX, earthCenterY, earthRadius + 12, rad1, rad2, false);
+            ctx.stroke();
+        }
+
+        // 5. 确定观察者位置 (根据偏离阳光直射点的角度)
+        const obsX = earthCenterX + earthRadius * Math.cos(alphaRad);
+        const obsY = earthCenterY + earthRadius * Math.sin(alphaRad);
+
+        // 绘制观察者地平线 (绿色切线)
+        const tanAngle = alphaRad + Math.PI / 2;
+        const tanLength = 35;
+        ctx.strokeStyle = '#2ecc71'; 
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(obsX - tanLength * Math.cos(tanAngle), obsY - tanLength * Math.sin(tanAngle));
+        ctx.lineTo(obsX + tanLength * Math.cos(tanAngle), obsY + tanLength * Math.sin(tanAngle));
+        ctx.stroke();
+
+        // 绘制观察者红点
+        ctx.fillStyle = '#ff4757';
+        ctx.beginPath();
+        ctx.arc(obsX, obsY, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 6. 绘制水平射入的太阳光束 (仅当观察者在向阳面时)
+        if (Math.abs(alpha) <= 90) {
+            ctx.strokeStyle = 'rgba(241, 196, 15, 0.8)'; 
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(obsX + 250, obsY); // 光线从右边很远处射来
+            ctx.lineTo(obsX + 15, obsY);  // 停在观察者稍前方
+            ctx.stroke();
+
+            // 绘制箭头尖端，指向左侧(观察者)
+            ctx.fillStyle = '#f1c40f';
+            ctx.beginPath();
+            ctx.moveTo(obsX + 5, obsY);
+            ctx.lineTo(obsX + 20, obsY - 6);
+            ctx.lineTo(obsX + 20, obsY + 6);
+            ctx.fill();
+
+            // 标注高度角数值
+            ctx.fillStyle = '#f1c40f';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(elevation.toFixed(1) + '°', obsX + 30, obsY - 12);
+        } else {
+            // 极夜提示
+            ctx.fillStyle = '#8cbed6';
+            ctx.font = '14px Arial';
+            ctx.fillText('处于地球背阴面 (极夜)', obsX - 70, obsY - 20);
+        }
+
+        // 绘制远处的太阳示意发光体
+        const sunGradient = ctx.createRadialGradient(650, 250, 20, 650, 250, 200);
+        sunGradient.addColorStop(0, 'rgba(241, 196, 15, 0.5)');
+        sunGradient.addColorStop(1, 'rgba(241, 196, 15, 0)');
+        ctx.fillStyle = sunGradient;
+        ctx.beginPath();
+        ctx.arc(650, 250, 200, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    latSlider.addEventListener('input', updateSimulation);
+    monthSlider.addEventListener('input', updateSimulation);
+    updateSimulation();
+</script>
+
+</body>
+</html>
